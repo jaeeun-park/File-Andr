@@ -17,13 +17,18 @@
         android:src="@drawable/ic_arrow_back_black_24dp"
         />
 
-    <androidx.appcompat.widget.SwitchCompat
-        android:id="@+id/toggle"
+    <ImageView
+        android:id="@+id/main_layout_change"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:scrollbars="vertical"
+        android:src="@drawable/selector_clickbtn_layout_change"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="@id/head"
+        app:layout_constraintBottom_toTopOf="@id/head"
+        app:layout_constraintEnd_toEndOf="parent"
         />
 
     <androidx.constraintlayout.widget.Guideline
@@ -74,6 +79,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/pointer"
         />
+
 
 
 

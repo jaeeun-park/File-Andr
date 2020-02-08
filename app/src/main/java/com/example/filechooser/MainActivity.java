@@ -24,9 +24,9 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView.LayoutManager linearLayoutManager;
     private RecyclerView.LayoutManager gridLayoutManager;
     private RecyclerView.LayoutManager layoutManager;
-    private SwitchCompat toggle;
     private File here;
     private TextView pointer;
+    private ImageView toggle;
 
     private final String TAG = "Naver";
 
@@ -48,19 +48,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initView(){
-        toggle = findViewById(R.id.toggle);
-        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        toggle = findViewById(R.id.main_layout_change);
+        toggle.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
+            public void onClick(View v) {
+                if(layoutManager == linearLayoutManager){
+                    toggle.setActivated(true);
                     layoutManager = gridLayoutManager;
                     mAdapter.setLayoutType(ItemType.LAYOUT_GRID);
                 }
                 else{
+                    toggle.setActivated(false);
                     layoutManager = linearLayoutManager;
                     mAdapter.setLayoutType(ItemType.LAYOUT_LINEAR);
                 }
                 recyclerView.setLayoutManager(layoutManager);
+
             }
         });
 
