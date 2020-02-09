@@ -26,6 +26,6 @@ public class GridViewHolder extends AbsViewHolder {
             this.icon.setImageResource(R.drawable.ic_insert_drive_file_black_24dp);
         }
         this.title.setText(data.getName());
-        this.size.setText(data.isDirectory()? ""+data.listFiles().length:""+0);
+        this.size.setText(data.isDirectory() && data.listFiles() != null? ""+data.listFiles().length:""+0);
     }
 }

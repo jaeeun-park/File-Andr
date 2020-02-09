@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // files를 통으로 넘겨주는게 좋다.
+        // File[]를 통으로 넘겨주는게 좋다.
         // 굳이 처리하여 제한된 정보만 넘겨주는 것보다 통으로 넘기는게 좋음.
 
         linearLayoutManager = new LinearLayoutManager(this);
@@ -67,19 +67,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //백버튼
+        //상단 백버튼
         findViewById(R.id.goBack).setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                if(here.getAbsolutePath().equals(Environment.getRootDirectory().toString())){
-                    finish();
-                }else{
-                    File parentFile = here.getParentFile();
-                    String pointerTextNow = pointer.getText().toString();
-                    pointer.setText(pointerTextNow.substring(0, pointerTextNow.length() - (here.getName().length() + 3)));
-                    here = parentFile;
-                    mAdapter.setmDataset(parentFile.listFiles());
-                }
+                goBack();
             }
         });
 
@@ -91,10 +83,23 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
     }
 
+    private void goBack() {
+        if(here.getAbsolutePath().equals(Environment.getRootDirectory().toString())){
+            finish();
+        }else{
+            File parentFile = here.getParentFile();
+            String pointerTextNow = pointer.getText().toString();
+            pointer.setText(pointerTextNow.substring(0, pointerTextNow.length() - (here.getName().length() + 3)));
+            here = parentFile;
+            mAdapter.setDataList(parentFile.listFiles());
+        }
+    }
+
     private void setRecyclerData(String filePath){
         File[]  files = new File(filePath).listFiles();
-        mAdapter = new RecyclerAdapter(files);
+        mAdapter = new RecyclerAdapter();
         recyclerView.setAdapter(mAdapter);
+        mAdapter.setDataList(files);
         mAdapter.setOnItemClickListener(itemClickListener);
     }
 
@@ -102,12 +107,18 @@ public class MainActivity extends AppCompatActivity {
             = new RecyclerAdapter.OnItemClickListener() {
         @Override
         public void onItemClick(File data) {
-            if (data.isDirectory()){
+            if (data.isDirectory() && data.listFiles() != null){
                 File[] files = data.listFiles();
                 here = data;
                 pointer.append(" > "+here.getName());
-                mAdapter.setmDataset(files);
+                mAdapter.setDataList(files);
             }
         }
     };
+
+    //기존의 백버튼
+    @Override
+    public void onBackPressed() {
+        goBack();
+    }
 }

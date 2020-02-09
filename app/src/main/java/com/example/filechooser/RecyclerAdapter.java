@@ -27,10 +27,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<AbsViewHolder>{
     private OnItemClickListener listener;
 
 
-    public RecyclerAdapter(File[] myDataset){
-        this.mDataset = myDataset;
-    }
-
     public void setOnItemClickListener(OnItemClickListener listener){
         this.listener = listener;
     }
@@ -51,13 +47,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<AbsViewHolder>{
     // 16진수 32비트로 설정하기.
     private static final int POSITION_TAG = 0xFFFFFFF1;
 
+    // 여기에서 UI 관련 된 처리(데이터 뽑아서 넣어주기)를 여기서 하는게 좋다.
     @Override
     public void onBindViewHolder(@NonNull AbsViewHolder holder, int position) {
         holder.setData(mDataset[position]);
-        holder.view.setTag(POSITION_TAG,position); //File 객체를 통으로 넣어서 사용해도 된다
-        holder.view.setOnClickListener(clickListener);
-
-        // 여기에서 UI 관련 된 처리(데이터 뽑아서 넣어주기)를 여기서 하는게 좋다.
 
         // Map<int, Object> 형태로 되어있음.
         // 태그는 뷰 안에 저장 공간.(동적임 엄청난게 들어가기도 함 ex. bitmap)
@@ -93,7 +86,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<AbsViewHolder>{
     }
 
 
-    public void setmDataset(File[] files){
+    public void setDataList(File[] files){
         mDataset = files;
         notifyDataSetChanged();
     }

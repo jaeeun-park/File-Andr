@@ -32,6 +32,8 @@ public class LinearViewHolder extends AbsViewHolder {
         }
         this.title.setText(data.getName());
         this.date.setText(format.format(data.lastModified()));
-        this.size.setText(data.isDirectory()? ""+data.listFiles().length:""+0);
+        this.size.setText(data.isDirectory() && data.listFiles() != null?
+                                                 ""+data.listFiles().length:""+0);
+
     }
 }
