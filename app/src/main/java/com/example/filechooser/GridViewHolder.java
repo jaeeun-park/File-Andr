@@ -16,6 +16,7 @@ public class GridViewHolder extends AbsViewHolder {
         this.title = view.findViewById(R.id.title);
         this.size = view.findViewById(R.id.size);
         this.icon = view.findViewById(R.id.icon);
+        this.checkBox = view.findViewById(R.id.layout_file_select);
     }
 
     @Override
@@ -27,5 +28,14 @@ public class GridViewHolder extends AbsViewHolder {
         }
         this.title.setText(data.getName());
         this.size.setText(data.isDirectory() && data.listFiles() != null? ""+data.listFiles().length:""+0);
+    }
+
+    @Override
+    public void setEditMode(boolean isEditMode) {
+        if(isEditMode){
+            this.checkBox.setVisibility(View.VISIBLE);
+        } else{
+            this.checkBox.setVisibility(View.GONE);
+        }
     }
 }

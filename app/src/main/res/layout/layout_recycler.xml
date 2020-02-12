@@ -7,8 +7,16 @@
     android:layout_width="match_parent"
     android:layout_height="70dp">
 
-
-
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:id="@+id/layout_file_select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/icon"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone"
+        />
     
     <ImageView
         android:id="@+id/icon"
@@ -19,7 +27,7 @@
         android:paddingStart="8dp"
         android:paddingLeft="8dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/layout_file_select"
         app:layout_constraintEnd_toStartOf="@+id/title"
         app:layout_constraintBottom_toBottomOf="parent"
         />

@@ -1,6 +1,7 @@
 package com.example.filechooser;
 
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -14,9 +15,11 @@ public abstract class AbsViewHolder extends RecyclerView.ViewHolder {
         super(itemView);
     }
     public View view;
+    public CheckBox checkBox;
     public TextView title;
     public TextView date;
     public TextView size;
     public ImageView icon;
     public abstract void setData(File data);
+    public abstract  void setEditMode(boolean isEditMode);
 }

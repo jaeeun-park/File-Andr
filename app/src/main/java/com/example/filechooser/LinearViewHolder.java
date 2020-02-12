@@ -21,6 +21,7 @@ public class LinearViewHolder extends AbsViewHolder {
         this.date = view.findViewById(R.id.date);
         this.size = view.findViewById(R.id.size);
         this.icon = view.findViewById(R.id.icon);
+        this.checkBox = view.findViewById(R.id.layout_file_select);
     }
 
     @Override
@@ -35,5 +36,14 @@ public class LinearViewHolder extends AbsViewHolder {
         this.size.setText(data.isDirectory() && data.listFiles() != null?
                                                  ""+data.listFiles().length:""+0);
 
+    }
+
+    @Override
+    public void setEditMode(boolean isEditMode) {
+        if(isEditMode){
+            this.checkBox.setVisibility(View.VISIBLE);
+        } else {
+            this.checkBox.setVisibility(View.GONE);
+        }
     }
 }
