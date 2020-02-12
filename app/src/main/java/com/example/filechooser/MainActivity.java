@@ -1,5 +1,6 @@
 package com.example.filechooser;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.Group;
@@ -32,15 +33,20 @@ import java.io.IOException;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
+
+    private File here;
+    private Map<Integer,File> deleteTargetFiles = new HashMap<>();
+    private boolean[] isChecked;
 
     private RecyclerView recyclerView;
     private RecyclerAdapter mAdapter;
     private RecyclerView.LayoutManager linearLayoutManager;
     private RecyclerView.LayoutManager gridLayoutManager;
     private RecyclerView.LayoutManager layoutManager;
-    private File here;
     private TextView pointer;
     private ImageView toggle;
     private CheckBox checkBox;
@@ -130,13 +136,19 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton("확인", new DialogInterface.OnClickListener(){
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                Toast.makeText(getApplicationContext(), "확인 click", Toast.LENGTH_SHORT).show();
+                                Log.d("DeleteFile-MainActivity", "onClick: "+deleteTargetFiles.size());
+                                for(int key: deleteTargetFiles.keySet()){
+                                    File target = deleteTargetFiles.get(key);
+                                    mAdapter.deleteData(target, key);
+                                    target.delete();
+                                }
+                                goBack();
                             }
                         })
                         .setNegativeButton("취소", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                Toast.makeText(getApplicationContext(), "취소 click", Toast.LENGTH_SHORT).show();
+
                             }
                         })
                         .create();
@@ -148,11 +160,42 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+            @Override
+            public void onChildViewAttachedToWindow(@NonNull View view) {
+                if(isEditMode){
+                    CheckBox target = view.findViewById(R.id.layout_file_select);
+                    int index = mAdapter.getPosition(view);
+                    target.setChecked(isChecked[index]);
+                }
+            }
+
+            @Override
+            public void onChildViewDetachedFromWindow(@NonNull View view) {
+                if(isEditMode){
+                    CheckBox target = view.findViewById(R.id.layout_file_select);
+                    target.setChecked(false);
+                }
+            }
+        });
     }
+
+    // 리사이클러 뷰 데이터 설정
+    private void setRecyclerData(String filePath) {
+        here = new File(filePath);
+        ArrayList<File> files = new ArrayList<>(Arrays.asList(here.listFiles()));
+        mAdapter = new RecyclerAdapter();
+        recyclerView.setAdapter(mAdapter);
+        mAdapter.setDataList(files);
+        mAdapter.setOnItemClickListener(itemClickListener);
+        mAdapter.setOnItemLongClickListener(itemLongClickListener);
+    }
+
 
     private void goBack() {
         if(isEditMode){
             isEditMode = ItemType.EDIT_MODE_OFF;
+            deleteTargetFiles.clear();
             mAdapter.setEditMode(ItemType.EDIT_MODE_OFF);
             editBtnGroup.setVisibility(View.GONE);
             addFileBtn.setEnabled(true);
@@ -170,15 +213,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setRecyclerData(String filePath) {
-        here = new File(filePath);
-        ArrayList<File> files = new ArrayList<>(Arrays.asList(here.listFiles()));
-        mAdapter = new RecyclerAdapter();
-        recyclerView.setAdapter(mAdapter);
-        mAdapter.setDataList(files);
-        mAdapter.setOnItemClickListener(itemClickListener);
-        mAdapter.setOnItemLongClickListener(itemLongClickListener);
-    }
 
     private RecyclerAdapter.OnItemClickListener itemClickListener
             = new RecyclerAdapter.OnItemClickListener() {
@@ -221,10 +255,18 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onItemClick(View view) {
+        public void onItemClick(View view, File file, int index) {
             // 클릭이 발생하면 체크박스 체크하기
             checkBox = view.findViewById(R.id.layout_file_select);
             checkBox.setChecked(!checkBox.isChecked());
+            if(checkBox.isChecked()){
+                //체크 되면 어레이 리스트에 파일 추가
+                deleteTargetFiles.put(index, file);
+                isChecked[index] = true;
+            } else{
+                deleteTargetFiles.remove(index);
+                isChecked[index] = false;
+            }
         }
     };
 
@@ -236,6 +278,7 @@ public class MainActivity extends AppCompatActivity {
             mAdapter.setEditMode(isEditMode);
             editBtnGroup.setVisibility(View.VISIBLE);
             addFileBtn.setEnabled(false);
+            isChecked = new boolean[mAdapter.getItemCount()];
         }
     };
 
@@ -249,7 +292,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == REQUEST_CODE_ADD_FILE && resultCode == Activity.RESULT_OK){
-            Log.d("MainActivity111", "onActivityResult: "+"hello");
             mAdapter.addData((File)data.getExtras().get("DATA"));
         }
     }

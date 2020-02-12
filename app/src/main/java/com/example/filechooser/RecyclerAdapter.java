@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<AbsViewHolder>{
     private ArrayList<File> mDataset;
@@ -22,7 +23,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<AbsViewHolder>{
 
     public interface OnItemClickListener{
         public void onItemClick(File data);
-        public void onItemClick(View view);
+        public void onItemClick(View view, File file, int index);
     }
     public interface OnItemLongClickListener{
         public void onItemLongClick();
@@ -71,7 +72,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<AbsViewHolder>{
         @Override
         public void onClick(View v) {
             if(isEditMode){
-                listener.onItemClick(v);
+                listener.onItemClick(v, mDataset.get((int)v.getTag(POSITION_TAG)), (int)v.getTag(POSITION_TAG));
             } else{
                 listener.onItemClick(mDataset.get((int)v.getTag(POSITION_TAG)));
             }
@@ -124,6 +125,16 @@ public class RecyclerAdapter extends RecyclerView.Adapter<AbsViewHolder>{
         mDataset.add(file);
         Log.d("RecyclerAdapter111", "addData: "+mDataset.size());
         notifyItemInserted(mDataset.size()-1);
+    }
+
+    public void deleteData(File file, int position){
+        Log.d("DeleteFile_RecAd", "deleteData: "+position);
+        mDataset.remove(file);
+        notifyItemRemoved(position);
+    }
+
+    public int getPosition(View view){
+        return (int)view.getTag(POSITION_TAG);
     }
 
 }
