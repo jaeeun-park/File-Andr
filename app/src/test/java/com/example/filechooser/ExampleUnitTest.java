@@ -2,6 +2,7 @@ package com.example.filechooser;
 
 import org.junit.Test;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import static org.junit.Assert.*;
@@ -14,8 +15,5 @@ import static org.junit.Assert.*;
 public class ExampleUnitTest {
     @Test
     public void arrayListTest() {
-        int size = 5;
-        boolean[] test = new boolean[size];
-        System.out.println(test[3]);
     }
 }

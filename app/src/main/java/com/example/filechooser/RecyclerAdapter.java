@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Map;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<AbsViewHolder>{
     private ArrayList<File> mDataset;

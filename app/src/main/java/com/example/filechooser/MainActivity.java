@@ -1,5 +1,17 @@
 package com.example.filechooser;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.ImageView;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,27 +21,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Environment;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView.LayoutManager layoutManager;
     private TextView pointer;
     private ImageView toggle;
-    private CheckBox checkBox;
     private Group editBtnGroup;
     private ImageView addFileBtn;
     private ImageView deleteFileBtn;
@@ -75,6 +66,12 @@ public class MainActivity extends AppCompatActivity {
         initView();
 //        root = Environment.getRootDirectory().toString();
         root = getFilesDir().getAbsolutePath();
+
+        mAdapter = new RecyclerAdapter();
+        recyclerView.setAdapter(mAdapter);
+        mAdapter.setOnItemClickListener(itemClickListener);
+        mAdapter.setOnItemLongClickListener(itemLongClickListener);
+        here = new File(root);
         setRecyclerData(root);
 
     }
@@ -130,28 +127,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // 클릭을 하면 checkbox 체크 된 것을 확인해서 삭제할건지 확인하고 ok하면 삭제해주기
-                AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this)
-                        .setTitle("경고")
-                        .setMessage("정말 삭제 하시겠습니까?")
-                        .setPositiveButton("확인", new DialogInterface.OnClickListener(){
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Log.d("DeleteFile-MainActivity", "onClick: "+deleteTargetFiles.size());
-                                for(int key: deleteTargetFiles.keySet()){
-                                    File target = deleteTargetFiles.get(key);
-                                    mAdapter.deleteData(target, key);
-                                    target.delete();
-                                }
-                                goBack();
-                            }
-                        })
-                        .setNegativeButton("취소", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-
-                            }
-                        })
-                        .create();
                 alertDialog.show();
             }
         });
@@ -180,49 +155,46 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this)
+            .setTitle("경고")
+            .setMessage("정말 삭제 하시겠습니까?")
+            .setPositiveButton("확인", new DialogInterface.OnClickListener(){
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Log.d("DeleteFile-MainActivity", "onClick: "+deleteTargetFiles.size());
+                    for(int key: deleteTargetFiles.keySet()){
+                        File target = deleteTargetFiles.get(key);
+                        mAdapter.deleteData(target, key);
+                        target.delete();
+                    }
+                    goBack();
+                }
+            })
+            .setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            })
+            .create();
+
     // 리사이클러 뷰 데이터 설정
     private void setRecyclerData(String filePath) {
-        here = new File(filePath);
-        ArrayList<File> files = new ArrayList<>(Arrays.asList(here.listFiles()));
-        mAdapter = new RecyclerAdapter();
-        recyclerView.setAdapter(mAdapter);
-        mAdapter.setDataList(files);
-        mAdapter.setOnItemClickListener(itemClickListener);
-        mAdapter.setOnItemLongClickListener(itemLongClickListener);
-    }
-
-
-    private void goBack() {
-        if(isEditMode){
-            isEditMode = ItemType.EDIT_MODE_OFF;
-            deleteTargetFiles.clear();
-            mAdapter.setEditMode(ItemType.EDIT_MODE_OFF);
-            editBtnGroup.setVisibility(View.GONE);
-            addFileBtn.setEnabled(true);
-        } else{
-//            if (here.getAbsolutePath().equals(Environment.getRootDirectory().toString())) {
-            if (root.equals(here.getAbsolutePath())) {
-                finish();
-            } else {
-                File parentFile = here.getParentFile();
-                String pointerTextNow = pointer.getText().toString();
-                pointer.setText(pointerTextNow.substring(0, pointerTextNow.length() - (here.getName().length() + 3)));
-                here = parentFile;
-                mAdapter.setDataList(new ArrayList<File>(Arrays.asList(parentFile.listFiles())));
-            }
+        File[] target = new File(filePath).listFiles();
+        if(target!= null){
+            ArrayList<File> files = new ArrayList<>(Arrays.asList(here.listFiles()));
+            mAdapter.setDataList(files);
         }
     }
-
 
     private RecyclerAdapter.OnItemClickListener itemClickListener
             = new RecyclerAdapter.OnItemClickListener() {
         @Override
         public void onItemClick(File data) {
             if (data.isDirectory()) {
-                ArrayList<File> files = new ArrayList<>(Arrays.asList(data.listFiles()));
                 here = data;
                 pointer.append(" > " + here.getName());
-                mAdapter.setDataList(files);
+                setRecyclerData(data.getAbsolutePath());
             } else if (data.isFile()) {
 
                 Uri uri = FileProvider.getUriForFile(MainActivity.this, "com.example.filechooser.fileprovider", data);
@@ -257,10 +229,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onItemClick(View view, File file, int index) {
             // 클릭이 발생하면 체크박스 체크하기
-            checkBox = view.findViewById(R.id.layout_file_select);
+            CheckBox checkBox = view.findViewById(R.id.layout_file_select);
             checkBox.setChecked(!checkBox.isChecked());
+
+            //체크 박스 확인해서 삭제 할 파일 목록에 추가/삭제
             if(checkBox.isChecked()){
-                //체크 되면 어레이 리스트에 파일 추가
+                //체크 되면 삭제 할 파일 목록에 추가
                 deleteTargetFiles.put(index, file);
                 isChecked[index] = true;
             } else{
@@ -270,6 +244,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    // 길게 눌렀을 때 에디트 모드로 변환
     private RecyclerAdapter.OnItemLongClickListener itemLongClickListener
             = new RecyclerAdapter.OnItemLongClickListener() {
         @Override
@@ -288,6 +263,26 @@ public class MainActivity extends AppCompatActivity {
         goBack();
     }
 
+    private void goBack() {
+        if(isEditMode){
+            isEditMode = ItemType.EDIT_MODE_OFF;
+            deleteTargetFiles.clear();
+            mAdapter.setEditMode(ItemType.EDIT_MODE_OFF);
+            editBtnGroup.setVisibility(View.GONE);
+            addFileBtn.setEnabled(true);
+        } else{
+//            if (here.getAbsolutePath().equals(Environment.getRootDirectory().toString())) {
+            if (root.equals(here.getAbsolutePath())) {
+                finish();
+            } else {
+                String pointerTextNow = pointer.getText().toString();
+                pointer.setText(pointerTextNow.substring(0, pointerTextNow.length() - (here.getName().length() + 3)));
+                here = here.getParentFile();
+                setRecyclerData(here.getAbsolutePath());
+            }
+        }
+    }
+    //파일이 새로 생성되면 받아서 추가해준다.
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
