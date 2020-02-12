@@ -123,13 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
         //파일 삭제 키 클릭
         deleteFileBtn = findViewById(R.id.main_delete);
-        deleteFileBtn.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                // 클릭을 하면 checkbox 체크 된 것을 확인해서 삭제할건지 확인하고 ok하면 삭제해주기
-                alertDialog.show();
-            }
-        });
+        deleteFileBtn.setOnClickListener(deleteListener);
 
 
         recyclerView = findViewById(R.id.recyclerView);
@@ -154,29 +148,35 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    View.OnClickListener deleteListener = new View.OnClickListener(){
+        @Override
+        public void onClick(View v) {
+            // 클릭을 하면 checkbox 체크 된 것을 확인해서 삭제할건지 확인하고 ok하면 삭제해주기
+            new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("경고")
+                    .setMessage("정말 삭제 하시겠습니까?")
+                    .setPositiveButton("확인", new DialogInterface.OnClickListener(){
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Log.d("DeleteFile-MainActivity", "onClick: "+deleteTargetFiles.size());
+                            for(int key: deleteTargetFiles.keySet()){
+                                File target = deleteTargetFiles.get(key);
+                                mAdapter.deleteData(target, key);
+                                target.delete();
+                            }
+                            goBack();
+                        }
+                    })
+                    .setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
 
-    private AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this)
-            .setTitle("경고")
-            .setMessage("정말 삭제 하시겠습니까?")
-            .setPositiveButton("확인", new DialogInterface.OnClickListener(){
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    Log.d("DeleteFile-MainActivity", "onClick: "+deleteTargetFiles.size());
-                    for(int key: deleteTargetFiles.keySet()){
-                        File target = deleteTargetFiles.get(key);
-                        mAdapter.deleteData(target, key);
-                        target.delete();
-                    }
-                    goBack();
-                }
-            })
-            .setNegativeButton("취소", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-
-                }
-            })
-            .create();
+                        }
+                    })
+                    .create()
+                    .show();
+        }
+    };
 
     // 리사이클러 뷰 데이터 설정
     private void setRecyclerData(String filePath) {
@@ -228,18 +228,20 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onItemClick(View view, File file, int index) {
-            // 클릭이 발생하면 체크박스 체크하기
-            CheckBox checkBox = view.findViewById(R.id.layout_file_select);
-            checkBox.setChecked(!checkBox.isChecked());
+            if(file.isFile()){
+                // 클릭이 발생하면 체크박스 체크하기
+                CheckBox checkBox = view.findViewById(R.id.layout_file_select);
+                checkBox.setChecked(!checkBox.isChecked());
 
-            //체크 박스 확인해서 삭제 할 파일 목록에 추가/삭제
-            if(checkBox.isChecked()){
-                //체크 되면 삭제 할 파일 목록에 추가
-                deleteTargetFiles.put(index, file);
-                isChecked[index] = true;
-            } else{
-                deleteTargetFiles.remove(index);
-                isChecked[index] = false;
+                //체크 박스 확인해서 삭제 할 파일 목록에 추가/삭제
+                if(checkBox.isChecked()){
+                    //체크 되면 삭제 할 파일 목록에 추가
+                    deleteTargetFiles.put(index, file);
+                    isChecked[index] = true;
+                } else{
+                    deleteTargetFiles.remove(index);
+                    isChecked[index] = false;
+                }
             }
         }
     };
