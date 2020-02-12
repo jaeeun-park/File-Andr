@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 
 public class EditingActivity extends AppCompatActivity {
@@ -65,12 +66,11 @@ public class EditingActivity extends AppCompatActivity {
                     try {
                         bs = new BufferedOutputStream(new FileOutputStream(data));
                         bs.write(content.getBytes());
-//                        bs.flush();
                     } catch (Exception e) {
                         e.printStackTrace();
                     } finally {
                         try {
-                            bs.close();
+                            if(bs != null )bs.close();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -111,7 +111,7 @@ public class EditingActivity extends AppCompatActivity {
             e.printStackTrace();
         } finally {
             try {
-                fs.close();
+                if(fs != null) fs.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
